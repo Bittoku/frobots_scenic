@@ -20,14 +20,13 @@ defmodule FrobotsScenic.MixProject do
   def application do
     [
       mod: {FrobotsScenic, []},
-      extra_applications: [:crypto, :fubars, :logger]
+      extra_applications: [:crypto, :logger]
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:fubars, in_umbrella: true},
       {:frobots, in_umbrella: true},
       {:scenic, "~> 0.10"},
       {:scenic_driver_glfw, "~> 0.10", targets: :host}
