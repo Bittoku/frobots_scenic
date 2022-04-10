@@ -1,4 +1,4 @@
-defmodule FrobotsScenic.Scene.Game do
+defmodule FrobotsScenic.Scene.Local.Game do
   use Scenic.Scene
   alias Scenic.Graph
   alias Scenic.ViewPort
@@ -52,12 +52,12 @@ defmodule FrobotsScenic.Scene.Game do
             damage: integer,
             speed: integer,
             heading: integer,
-            ploc: FrobotsScenic.Scene.Game.location(),
-            loc: FrobotsScenic.Scene.Game.location(),
+            ploc: FrobotsScenic.Scene.Local.Game.location(),
+            loc: FrobotsScenic.Scene.Local.Game.location(),
             id: integer,
             name: String.t(),
             timer: reference,
-            status: FrobotsScenic.Scene.Game.tank_status(),
+            status: FrobotsScenic.Scene.Local.Game.tank_status(),
             fsm_state: String.t()
           }
     defstruct scan: {0, 0},
@@ -75,9 +75,9 @@ defmodule FrobotsScenic.Scene.Game do
 
   defmodule Missile do
     @type t :: %{
-            ploc: FrobotsScenic.Scene.Game.location(),
-            loc: FrobotsScenic.Scene.Game.location(),
-            status: FrobotsScenic.Scene.Game.miss_status(),
+            ploc: FrobotsScenic.Scene.Local.Game.location(),
+            loc: FrobotsScenic.Scene.Local.Game.location(),
+            status: FrobotsScenic.Scene.Local.Game.miss_status(),
             name: String.t()
           }
     defstruct ploc: {0, 0},

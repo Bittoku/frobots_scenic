@@ -1,4 +1,4 @@
-defmodule FrobotsScenic.Scene.Start do
+defmodule FrobotsScenic.Scene.Local.Start do
   @moduledoc """
   Sample scene.
   """
@@ -107,7 +107,7 @@ defmodule FrobotsScenic.Scene.Start do
   end
 
   defp go_to_first_scene(%{viewport: vp, frobots: frobots}) do
-    ViewPort.set_root(vp, {FrobotsScenic.Scene.Game, load_frobots(frobots)})
+    ViewPort.set_root(vp, {FrobotsScenic.Scene.Local.Game, load_frobots(frobots)})
   end
 
   # start the game
