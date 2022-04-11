@@ -1,4 +1,4 @@
-defmodule FrobotsScenic.Scene.Local.Start do
+defmodule FrobotsScenic.Scene.Start do
   @moduledoc """
   Sample scene.
   """
@@ -78,8 +78,13 @@ defmodule FrobotsScenic.Scene.Local.Start do
   # Nav and Notes are added last so that they draw on top
 
   # ============================================================================
-
-  def init(_, opts) do
+  @type t :: %{
+          viewport: pid(),
+          graph: Scenic.Graph.t(),
+          frobots: map(),
+          module: module()
+        }
+  def init(game_module, opts) do
     viewport = opts[:viewport]
 
     state = %{
@@ -91,7 +96,8 @@ defmodule FrobotsScenic.Scene.Local.Start do
         frobot3: :rabbit,
         frobot4: :rabbit,
         frobot5: :rabbit
-      }
+      },
+      module: game_module
     }
 
     {:ok, state, push: @graph}
@@ -106,8 +112,9 @@ defmodule FrobotsScenic.Scene.Local.Start do
     )
   end
 
-  defp go_to_first_scene(%{viewport: vp, frobots: frobots}) do
-    ViewPort.set_root(vp, {FrobotsScenic.Scene.Local.Game, load_frobots(frobots)})
+  @spec go_to_first_scene(t()) :: :ok
+  defp go_to_first_scene(%{viewport: vp, frobots: frobots, module: game_module}) do
+    ViewPort.set_root(vp, {game_module, load_frobots(frobots)})
   end
 
   # start the game
