@@ -30,3 +30,4 @@ foo-*.tar
 /.idea/
 _build
 deps
+*.iml

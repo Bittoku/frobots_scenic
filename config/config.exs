@@ -6,7 +6,7 @@ use Mix.Config
 config :frobots_scenic, :viewport, %{
   name: :main_viewport,
   size: {1000, 1000},
-  default_scene: {FrobotsScenic.Scene.Home, nil},
+  default_scene: {FrobotsScenic.Scene.Local.Start, nil},
   drivers: [
     %{
       module: Scenic.Driver.Glfw,
