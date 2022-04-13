@@ -130,7 +130,7 @@ defmodule FrobotsScenic.Scene.Game do
       put_in(
         state,
         [:objects, :tank, name],
-        Map.merge(%FrobotsScenic.Scene.Game.Tank{}, object_data)
+        struct!(FrobotsScenic.Scene.Game.Tank, object_data)
       )
     end)
   end
