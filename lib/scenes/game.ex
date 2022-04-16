@@ -87,7 +87,7 @@ defmodule FrobotsScenic.Scene.Game do
 
   # Initialize the game scene
 
-  def init(arg, opts) do
+  def init(frobots, opts) do
     viewport = opts[:viewport]
     # calculate the transform that centers the viewport
     {:ok, %ViewPort.Status{size: {vp_width, vp_height}}} = ViewPort.info(viewport)
@@ -97,6 +97,9 @@ defmodule FrobotsScenic.Scene.Game do
 
     # start a very simple animation timer
     {:ok, timer} = :timer.send_interval(@frame_ms, :frame)
+
+    IO.puts("Registering pid #{inspect(self())} as display")
+    :global.register_name(Application.get_env(:frobots, :display_process_name), self())
 
     # init the game state
     # The entire game state will be held here
@@ -108,7 +111,7 @@ defmodule FrobotsScenic.Scene.Game do
       graph: @graph,
       frame_count: 1,
       frame_timer: timer,
-      frobots: arg,
+      frobots: frobots,
       objects: %{tank: %{}, missile: %{}}
     }
 
@@ -125,12 +128,16 @@ defmodule FrobotsScenic.Scene.Game do
     {:ok, state, push: graph}
   end
 
+  defp keys_to_atoms(string_key_map) do
+    for {key, val} <- string_key_map, into: %{}, do: {String.to_atom(key), val}
+  end
+
   defp init_frobot_states(state, frobots_map) do
-    Enum.reduce(frobots_map, state, fn {name, object_data}, state ->
+    Enum.reduce(frobots_map, state, fn [name, object_data], state ->
       put_in(
         state,
         [:objects, :tank, name],
-        struct!(FrobotsScenic.Scene.Game.Tank, object_data)
+        struct!(FrobotsScenic.Scene.Game.Tank, keys_to_atoms(object_data))
       )
     end)
   end

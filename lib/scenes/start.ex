@@ -103,11 +103,21 @@ defmodule FrobotsScenic.Scene.Start do
     {:ok, state, push: @graph}
   end
 
+  def default_frobots() do
+    %{
+      frobot1: :rabbit,
+      frobot2: :rabbit,
+      frobot3: :rabbit,
+      frobot4: :rabbit,
+      frobot5: :rabbit
+    }
+  end
+
   @spec load_frobots(map()) :: list()
-  defp load_frobots(frobots) do
+  def load_frobots(frobots) do
     Map.new(
       Enum.map(frobots, fn {name, type} ->
-        {Atom.to_string(name), {Atom.to_string(type), @frobot_paths[type]}}
+        {Atom.to_string(name), %{type: Atom.to_string(type), brain_path: @frobot_paths[type]}}
       end)
     )
   end
