@@ -115,11 +115,10 @@ defmodule FrobotsScenic.Scene.Start do
 
   @spec load_frobots(map()) :: list()
   def load_frobots(frobots) do
-    Map.new(
       Enum.map(frobots, fn {name, type} ->
-        {Atom.to_string(name), %{type: Atom.to_string(type), brain_path: @frobot_paths[type]}}
+        #todo this needs to change once we have proper frobot unique names and not loading the template bots by default
+        %{name: Atom.to_string(type), type: "Basic"}
       end)
-    )
   end
 
   @spec go_to_first_scene(t()) :: :ok

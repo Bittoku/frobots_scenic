@@ -93,7 +93,7 @@ defmodule FrobotsScenic.Scene.Game do
     {:ok, %ViewPort.Status{size: {vp_width, vp_height}}} = ViewPort.info(viewport)
 
     # load the explode texture into the cache
-    Scenic.Cache.Static.Texture.load(@boom_path, @boom_hash)
+    #Scenic.Cache.Static.Texture.load(@boom_path, @boom_hash)
 
     # start a very simple animation timer
     {:ok, timer} = :timer.send_interval(@frame_ms, :frame)
