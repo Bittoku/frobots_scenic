@@ -93,7 +93,7 @@ defmodule FrobotsScenic.Scene.Game do
     {:ok, %ViewPort.Status{size: {vp_width, vp_height}}} = ViewPort.info(viewport)
 
     # load the explode texture into the cache
-    #Scenic.Cache.Static.Texture.load(@boom_path, @boom_hash)
+    # Scenic.Cache.Static.Texture.load(@boom_path, @boom_hash)
 
     # start a very simple animation timer
     {:ok, timer} = :timer.send_interval(@frame_ms, :frame)
@@ -192,14 +192,32 @@ defmodule FrobotsScenic.Scene.Game do
          speed: speed,
          fsm_state: fsm_state
        }) do
-
     graph
-    |> text("#{name}", id: name, fill: status_color(damage), translate: {10, 10 + id * @font_vert_space})
-    |> text("dm:#{damage}", fill: damage_color(damage), translate: {100, 10 + id * @font_vert_space})
-    |> text("sp:#{trunc(speed)}", fill: status_color(damage), translate: {160, 10 + id * @font_vert_space})
-    |> text("hd:#{heading}", fill: status_color(damage), translate: {220, 10 + id * @font_vert_space})
-    |> text("sc:#{deg}:#{res}", fill: status_color(damage), translate: {280, 10 + id * @font_vert_space})
-    |> text("st:#{fsm_state}", fill: status_color(damage), translate: {350, 10 + id * @font_vert_space})
+    |> text("#{name}",
+      id: name,
+      fill: status_color(damage),
+      translate: {10, 10 + id * @font_vert_space}
+    )
+    |> text("dm:#{damage}",
+      fill: damage_color(damage),
+      translate: {100, 10 + id * @font_vert_space}
+    )
+    |> text("sp:#{trunc(speed)}",
+      fill: status_color(damage),
+      translate: {160, 10 + id * @font_vert_space}
+    )
+    |> text("hd:#{heading}",
+      fill: status_color(damage),
+      translate: {220, 10 + id * @font_vert_space}
+    )
+    |> text("sc:#{deg}:#{res}",
+      fill: status_color(damage),
+      translate: {280, 10 + id * @font_vert_space}
+    )
+    |> text("st:#{fsm_state}",
+      fill: status_color(damage),
+      translate: {350, 10 + id * @font_vert_space}
+    )
   end
 
   defp draw_game_over(graph, name, vp_width, vp_height) do
