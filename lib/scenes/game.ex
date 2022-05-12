@@ -160,7 +160,7 @@ defmodule FrobotsScenic.Scene.Game do
 
   defp alive?(damage) do
     cond do
-      damage > 100 -> false
+      damage >= 100 -> false
       true -> true
     end
   end

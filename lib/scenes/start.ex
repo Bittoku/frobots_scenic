@@ -12,10 +12,14 @@ defmodule FrobotsScenic.Scene.Start do
   @body_offset 60
   def header() do
     [
-      text_spec("FUBARs", translate: {15, 20}),
+      text_spec("FROBOTs:", translate: {15, 20}),
       # this button will cause the scene to crash.
       button_spec("Fight!", id: :btn_run, theme: :danger, t: {370, 0})
     ]
+  end
+
+  def frobot_id(x) do
+    "frobot" <> Integer.to_string(x)
   end
 
   ##
@@ -29,10 +33,37 @@ defmodule FrobotsScenic.Scene.Start do
           frobot_types,
           :rabbit
         },
-        id: "frobot" <> Integer.to_string(x),
-        translate: {100 * x, 0}
+        id: frobot_id(x),
+        translate: {100 * x, 100}
       )
     end)
+  end
+
+  def num_of_frobots(num) do
+    dropdown_spec(
+      {
+        Enum.map(2..10, fn x -> {Integer.to_string(x), x} end ),
+        num
+      },
+      id: "num",
+      translate: {120, 0}
+    )
+  end
+
+  def add_specs(graph, num) do
+    add_specs_to_graph(
+      graph,
+      [
+        header(),
+               group_spec(frobot_dropdowns(num), t: {30, 30}),
+        num_of_frobots(num),
+      ],
+      translate: {0, @body_offset + 20}
+    )
+  end
+
+  def delete_specs(graph, num) do
+    Enum.reduce(1..num, graph, fn x, graph -> Graph.delete(graph, frobot_id(x)) end)
   end
 
   # ============================================================================
@@ -44,20 +75,16 @@ defmodule FrobotsScenic.Scene.Start do
         }
   def init(game_module, opts) do
     viewport = opts[:viewport]
+    num = Keyword.get(opts, :num, 2)
 
     ##
     # And build the final graph
     graph =
       Graph.build(font: :roboto, font_size: 24, theme: :dark)
-      |> add_specs_to_graph(
-        [
-          header(),
-          group_spec(frobot_dropdowns(5), t: {15, 74})
-        ],
-        translate: {0, @body_offset + 20}
-      )
+      |> add_specs(num)
 
     state = %{
+      num: num,
       viewport: viewport,
       graph: graph,
       frobots: default_frobots(),
@@ -76,7 +103,7 @@ defmodule FrobotsScenic.Scene.Start do
 
   @spec load_frobots(map()) :: list()
   def load_frobots(frobots) do
-    Enum.map(frobots, fn {name, type} ->
+    Enum.map(frobots, fn {_name, type} ->
       # todo this needs to change once we have proper frobot unique names and not loading the template bots by default
       # this is aweful as the type is the atom version of the name.
       %{name: Atom.to_string(type), type: "Basic"}
@@ -92,6 +119,10 @@ defmodule FrobotsScenic.Scene.Start do
     IO.puts(inspect(frobots))
   end
 
+  def add_default_frobots( state, num ) do
+    Enum.reduce(1..num, state, fn x, state -> put_in(state, [:frobots, frobot_id(x)], :rabbit ) end)
+  end
+
   # start the game
   def filter_event({:click, :btn_run}, _, state) do
     go_to_first_scene(state)
@@ -99,8 +130,24 @@ defmodule FrobotsScenic.Scene.Start do
     {:halt, state}
   end
 
-  def filter_event({:value_changed, dropdown, val}, _, state) do
-    state = put_in(state, [:frobots, dropdown], val)
+  def filter_event({:value_changed, "num", num}, _, state) do
+    state = cond do
+      num > 1 and num <= 10 ->
+        graph = state.graph
+              |> delete_specs(state.num)
+              |> add_specs(num)
+        state |> Map.put(:graph, graph)
+              |> Map.put(:num, num)
+              |> add_default_frobots(num)
+      true ->
+        state
+    end
     {:halt, state, push: state.graph}
   end
+
+  def filter_event({:value_changed, id, val}, _, state) do
+    state = put_in(state, [:frobots, id], val)
+    {:halt, state, push: state.graph}
+  end
+
 end
