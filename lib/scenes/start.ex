@@ -42,7 +42,7 @@ defmodule FrobotsScenic.Scene.Start do
   def num_of_frobots(num) do
     dropdown_spec(
       {
-        Enum.map(2..10, fn x -> {Integer.to_string(x), x} end ),
+        Enum.map(2..10, fn x -> {Integer.to_string(x), x} end),
         num
       },
       id: "num",
@@ -55,8 +55,8 @@ defmodule FrobotsScenic.Scene.Start do
       graph,
       [
         header(),
-               group_spec(frobot_dropdowns(num), t: {30, 30}),
-        num_of_frobots(num),
+        group_spec(frobot_dropdowns(num), t: {30, 30}),
+        num_of_frobots(num)
       ],
       translate: {0, @body_offset + 20}
     )
@@ -71,7 +71,8 @@ defmodule FrobotsScenic.Scene.Start do
           viewport: pid(),
           graph: Scenic.Graph.t(),
           frobots: map(),
-          module: module()
+          module: module(),
+          match_id: Integer
         }
   def init(game_module, opts) do
     viewport = opts[:viewport]
@@ -83,12 +84,15 @@ defmodule FrobotsScenic.Scene.Start do
       Graph.build(font: :roboto, font_size: 24, theme: :dark)
       |> add_specs(num)
 
+    {:ok, match_id} = Frobots.request_match()
+
     state = %{
       num: num,
       viewport: viewport,
       graph: graph,
       frobots: default_frobots(),
-      module: game_module
+      module: game_module,
+      match_id: match_id
     }
 
     {:ok, state, push: graph}
@@ -119,8 +123,8 @@ defmodule FrobotsScenic.Scene.Start do
     IO.puts(inspect(frobots))
   end
 
-  def add_default_frobots( state, num ) do
-    Enum.reduce(1..num, state, fn x, state -> put_in(state, [:frobots, frobot_id(x)], :rabbit ) end)
+  def add_default_frobots(state, num) do
+    Enum.reduce(1..num, state, fn x, state -> put_in(state, [:frobots, frobot_id(x)], :rabbit) end)
   end
 
   # start the game
@@ -131,17 +135,23 @@ defmodule FrobotsScenic.Scene.Start do
   end
 
   def filter_event({:value_changed, "num", num}, _, state) do
-    state = cond do
-      num > 1 and num <= 10 ->
-        graph = state.graph
-              |> delete_specs(state.num)
-              |> add_specs(num)
-        state |> Map.put(:graph, graph)
-              |> Map.put(:num, num)
-              |> add_default_frobots(num)
-      true ->
-        state
-    end
+    state =
+      cond do
+        num > 1 and num <= 10 ->
+          graph =
+            state.graph
+            |> delete_specs(state.num)
+            |> add_specs(num)
+
+          state
+          |> Map.put(:graph, graph)
+          |> Map.put(:num, num)
+          |> add_default_frobots(num)
+
+        true ->
+          state
+      end
+
     {:halt, state, push: state.graph}
   end
 
@@ -149,5 +159,4 @@ defmodule FrobotsScenic.Scene.Start do
     state = put_in(state, [:frobots, id], val)
     {:halt, state, push: state.graph}
   end
-
 end
