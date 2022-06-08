@@ -13,8 +13,11 @@ defmodule FrobotsScenic.Scene.Start do
   def header() do
     [
       text_spec("FROBOTs:", translate: {15, 20}),
-      # this button will cause the scene to crash.
-      button_spec("Fight!", id: :btn_run, theme: :danger, t: {370, 0})
+      button_spec("Fight!", id: :btn_run, theme: :danger, t: {370, 0}),
+      button_spec("Upload Frobots", id: :btn_upload, theme: :primary, t: {370, 50}),
+      text_spec("Ok!", id: :upload_status, hidden: true, t: {550, 80}),
+      button_spec("Download Frobots", id: :btn_download, theme: :primary, t: {370, 100}),
+      text_spec("Ok!", id: :download_status, hidden: true, t: {550, 130}),
     ]
   end
 
@@ -55,7 +58,7 @@ defmodule FrobotsScenic.Scene.Start do
       graph,
       [
         header(),
-        group_spec(frobot_dropdowns(num), t: {30, 30}),
+        group_spec(frobot_dropdowns(num), t: {30, 50}),
         num_of_frobots(num)
       ],
       translate: {0, @body_offset + 20}
@@ -127,27 +130,46 @@ defmodule FrobotsScenic.Scene.Start do
     Enum.reduce(1..num, state, fn x, state -> put_in(state, [:frobots, frobot_id(x)], :rabbit) end)
   end
 
+  defp reset_graph(state, num) do
+    # set the number of frobots to be chosen to play, return the state
+    graph =
+      state.graph
+      |> delete_specs(state.num)
+      |> add_specs(num)
+
+    state
+    |> Map.put(:graph, graph)
+    |> Map.put(:num, num)
+    |> add_default_frobots(num)
+
+  end
+
   # start the game
   def filter_event({:click, :btn_run}, _, state) do
     go_to_first_scene(state)
-    # test_start_button(state)
     {:halt, state}
+  end
+
+  def filter_event({:click, :btn_upload}, _, state) do
+    # uploads the local dir frobots to the server, and then resets the graph
+    Frobots.save_player_frobots()
+    state = reset_graph(state, state.num)
+    graph = state.graph |> Graph.modify(:upload_status, &text(&1, "Uploaded", hidden: false))
+    {:halt, Map.put(state, :graph, graph), push: graph}
+  end
+
+  def filter_event({:click, :btn_download}, _, state) do
+    # downloads the frobots from the server and saves it locally
+    Frobots.load_player_frobots()
+    graph = state.graph |> Graph.modify(:download_status, &text(&1, "Downloaded", hidden: false))
+    {:halt, Map.put(state, :graph, graph), push: graph}
   end
 
   def filter_event({:value_changed, "num", num}, _, state) do
     state =
       cond do
         num > 1 and num <= 10 ->
-          graph =
-            state.graph
-            |> delete_specs(state.num)
-            |> add_specs(num)
-
-          state
-          |> Map.put(:graph, graph)
-          |> Map.put(:num, num)
-          |> add_default_frobots(num)
-
+          reset_graph(state, num)
         true ->
           state
       end
