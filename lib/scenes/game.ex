@@ -29,8 +29,8 @@ defmodule FrobotsScenic.Scene.Game do
   @type tank_status :: :alive | :destroyed
   @type miss_status :: :flying | :exploded
   @type object_map :: %{
-          tank: %{charlist() => %@name.Tank{}},
-          missile: %{charlist() => %@name.Missile{}}
+          tank: %{charlist() => %FrobotsScenic.Scene.Game.Tank{}},
+          missile: %{charlist() => %FrobotsScenic.Scene.Game.Missile{}}
         }
   @type t :: %{
           viewport: pid,
