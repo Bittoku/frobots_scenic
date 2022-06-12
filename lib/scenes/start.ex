@@ -66,7 +66,7 @@ defmodule FrobotsScenic.Scene.Start do
   end
 
   def delete_specs(graph, num) do
-    Enum.reduce(1..num, graph, fn x, graph -> Graph.delete(graph, frobot_id(x)) end)
+    Enum.reduce(0..num, graph, fn x, graph -> Graph.delete(graph, frobot_id(x)) end)
   end
 
   # ============================================================================
@@ -127,7 +127,7 @@ defmodule FrobotsScenic.Scene.Start do
   end
 
   def add_default_frobots(state, num) do
-    Enum.reduce(1..num, state, fn x, state -> put_in(state, [:frobots, frobot_id(x)], :rabbit) end)
+    Enum.reduce(0..num-1, state, fn x, state -> put_in(state, [:frobots, frobot_id(x)], :rabbit) end)
   end
 
   defp reset_graph(state, num) do
