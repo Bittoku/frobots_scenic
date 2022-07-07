@@ -115,7 +115,7 @@ defmodule FrobotsScenic.Scene.Game do
       objects: %{tank: %{}, missile: %{}}
     }
 
-    {:ok, frobots_map} = Frobots.start_frobots(state.frobots)
+    {:ok, frobots_map} = Frobots.start_fubars(state.frobots)
 
     state = init_frobot_states(state, frobots_map)
 
