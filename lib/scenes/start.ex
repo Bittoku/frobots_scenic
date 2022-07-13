@@ -17,7 +17,7 @@ defmodule FrobotsScenic.Scene.Start do
       button_spec("Upload Frobots", id: :btn_upload, theme: :primary, t: {370, 50}),
       text_spec("Ok!", id: :upload_status, hidden: true, t: {550, 80}),
       button_spec("Download Frobots", id: :btn_download, theme: :primary, t: {370, 100}),
-      text_spec("Ok!", id: :download_status, hidden: true, t: {550, 130}),
+      text_spec("Ok!", id: :download_status, hidden: true, t: {550, 130})
     ]
   end
 
@@ -127,7 +127,9 @@ defmodule FrobotsScenic.Scene.Start do
   end
 
   def add_default_frobots(state, num) do
-    Enum.reduce(0..num-1, state, fn x, state -> put_in(state, [:frobots, frobot_id(x)], :rabbit) end)
+    Enum.reduce(0..(num - 1), state, fn x, state ->
+      put_in(state, [:frobots, frobot_id(x)], :rabbit)
+    end)
   end
 
   defp reset_graph(state, num) do
@@ -141,7 +143,6 @@ defmodule FrobotsScenic.Scene.Start do
     |> Map.put(:graph, graph)
     |> Map.put(:num, num)
     |> add_default_frobots(num)
-
   end
 
   # start the game
@@ -170,6 +171,7 @@ defmodule FrobotsScenic.Scene.Start do
       cond do
         num > 1 and num <= 10 ->
           reset_graph(state, num)
+
         true ->
           state
       end

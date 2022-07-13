@@ -11,6 +11,7 @@ defmodule FrobotsScenic do
     children = [
       {Scenic, viewports: [main_viewport_config]}
     ]
+
     Supervisor.start_link(children, strategy: :one_for_one)
   end
 end
