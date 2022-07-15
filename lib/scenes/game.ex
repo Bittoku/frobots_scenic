@@ -22,6 +22,17 @@ defmodule FrobotsScenic.Scene.Game do
   @animate_ms 100
   @finish_delay_ms 500
 
+  # dummy match template (as the beta this stuff doesn't exist)
+  @dummy_match_template %{
+    entry_fee: 100,
+    commission_rate: 10,
+    match_type: :individual,
+    # winner take all
+    payout_map: [100],
+    max_frobots: 4,
+    min_frobots: 2
+  }
+
   # types
   @type location :: {integer, integer}
   @type miss_name :: charlist()
@@ -115,17 +126,22 @@ defmodule FrobotsScenic.Scene.Game do
       objects: %{tank: %{}, missile: %{}}
     }
 
-    {:ok, frobots_map} = Frobots.start_fubars(state.frobots)
+    case Frobots.start_fubars(Map.put(@dummy_match_template, :frobots, state.frobots)) do
+      {:ok, frobots_map} ->
+        state = init_frobot_states(state, frobots_map)
 
-    state = init_frobot_states(state, frobots_map)
+        # update the graph and push it to the rendered
+        graph =
+          state.graph
+          |> draw_status(state.objects)
+          |> draw_game_objects(state.objects)
 
-    # update the graph and push it to the rendered
-    graph =
-      state.graph
-      |> draw_status(state.objects)
-      |> draw_game_objects(state.objects)
+        {:ok, state, push: graph}
 
-    {:ok, state, push: graph}
+      {:error, _error} ->
+        # todo should probably show an error to the graph, as the game failed to start somehow.
+        {:ok, state, push: state.graph}
+    end
   end
 
   defp keys_to_atoms(string_key_map) do
@@ -423,9 +439,10 @@ defmodule FrobotsScenic.Scene.Game do
     {:noreply, %{state | frame_count: frame_count + 1}, push: graph}
   end
 
-  def handle_info({:game_over, name}, state) do
+  def handle_info({:game_over, names}, state) do
+    IO.inspect names = Tuple.to_list(names)
     {:ok, _} = :timer.cancel(state.frame_timer)
-    graph = state.graph |> draw_game_over(name, state.tile_width, state.tile_height)
+    graph = state.graph |> draw_game_over(~s/#{names}/, state.tile_width, state.tile_height)
     {:noreply, state, push: graph}
   end
 
