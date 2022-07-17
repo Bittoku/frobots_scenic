@@ -113,7 +113,7 @@ defmodule FrobotsScenic.Scene.Start do
     Enum.map(frobots, fn {_name, type} ->
       # todo this needs to change once we have proper frobot unique names and not loading the template bots by default
       # this is aweful as the type is the atom version of the name.
-      %{name: Atom.to_string(type), type: "proto"}
+      %{name: Atom.to_string(type) }
     end)
   end
 

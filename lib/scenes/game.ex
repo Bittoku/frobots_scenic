@@ -2,7 +2,7 @@ defmodule FrobotsScenic.Scene.Game do
   use Scenic.Scene
   alias Scenic.Graph
   alias Scenic.ViewPort
-  import Scenic.Primitives, only: [rrect: 3, text: 3, circle: 3, update_opts: 2, rect: 3]
+  import Scenic.Primitives, only: [rrect: 3, text: 3, circle: 3, update_opts: 2, rect: 3, line: 3]
 
   # Constants
   @name __MODULE__
@@ -34,6 +34,7 @@ defmodule FrobotsScenic.Scene.Game do
   }
 
   # types
+
   @type location :: {integer, integer}
   @type miss_name :: charlist()
   @type tank_name :: charlist()
@@ -56,6 +57,8 @@ defmodule FrobotsScenic.Scene.Game do
         }
 
   defmodule Tank do
+    @type npc_class :: :proto | :target
+
     @type t :: %{
             scan: {integer, integer},
             damage: integer,
@@ -67,7 +70,9 @@ defmodule FrobotsScenic.Scene.Game do
             name: charlist(),
             timer: reference,
             status: FrobotsScenic.Scene.Game.tank_status(),
-            fsm_state: charlist()
+            fsm_state: charlist(),
+            class: npc_class
+
           }
     defstruct scan: {0, 0},
               damage: 0,
@@ -79,7 +84,8 @@ defmodule FrobotsScenic.Scene.Game do
               name: nil,
               timer: nil,
               status: :alive,
-              fsm_state: nil
+              fsm_state: nil,
+              class: nil
   end
 
   defmodule Missile do
@@ -153,7 +159,7 @@ defmodule FrobotsScenic.Scene.Game do
       put_in(
         state,
         [:objects, :tank, name],
-        struct!(FrobotsScenic.Scene.Game.Tank, keys_to_atoms(object_data))
+        struct!(FrobotsScenic.Scene.Game.Tank, keys_to_atoms(IO.inspect(object_data)))
       )
     end)
   end
@@ -196,6 +202,31 @@ defmodule FrobotsScenic.Scene.Game do
       damage > 20 -> :dark_golden_rod
       true -> :green
     end
+  end
+
+  #https://htmlcolorcodes.com/color-names/
+  #https://hexdocs.pm/scenic/Scenic.Primitive.Style.Paint.Color.html#module-valid-colors
+  defp tank_color(class) do
+    case class do
+      "Proto" -> :red
+      "Target" -> :pale_green
+      _ -> :dodger_blue
+    end
+  end
+
+  # Draw the game grid
+  defp draw_grid(graph) do
+    range = for n <- 0..1000, rem(n, 10) == 0, do: n
+    draw_horiz = fn y, graph -> line( graph, {{0,y}, {1000,y}}, stroke: {1, :medium_blue}  ) end
+    draw_vert = fn x, graph -> line( graph, {{x,0}, {x,1000}}, stroke: {1, :medium_blue}  ) end
+
+    draw_horizontals = fn graph -> Enum.reduce(range, graph, fn n, graph -> draw_horiz.(n, graph) end) end
+    draw_verticals = fn graph -> Enum.reduce(range, graph, fn n, graph -> draw_vert.(n, graph) end) end
+
+    graph
+    |> draw_horizontals.()
+    |> draw_verticals.()
+
   end
 
   # Draw the score HUD
@@ -264,8 +295,8 @@ defmodule FrobotsScenic.Scene.Game do
     draw_tank_destroy(graph, x, y, name, id: name)
   end
 
-  defp draw_object(graph, :tank, %@name.Tank{loc: {x, y}, name: name, id: id}) do
-    draw_tank(graph, x, y, id, fill: :lime, id: name)
+  defp draw_object(graph, :tank, %@name.Tank{loc: {x, y}, name: name, id: id, class: class}) do
+    draw_tank(graph, x, y, id, fill: tank_color(class), id: name)
   end
 
   # draw missiles
@@ -435,7 +466,7 @@ defmodule FrobotsScenic.Scene.Game do
   # this is the refresh loop of the display
   @spec handle_info(:frame, %{frame_count: integer}) :: tuple
   def handle_info(:frame, %{frame_count: frame_count} = state) do
-    graph = state.graph |> draw_game_objects(state.objects) |> draw_status(state.objects)
+    graph = state.graph |> draw_grid() |> draw_game_objects(state.objects) |> draw_status(state.objects)
     {:noreply, %{state | frame_count: frame_count + 1}, push: graph}
   end
 
