@@ -2,7 +2,7 @@ defmodule FrobotsScenic.Scene.Game do
   use Scenic.Scene
   alias Scenic.Graph
   alias Scenic.ViewPort
-  import Scenic.Primitives, only: [rrect: 3, text: 3, circle: 3, update_opts: 2, rect: 3, line: 3]
+  import Scenic.Primitives, only: [rrect: 3, text: 3, circle: 3, line: 3]
 
   # Constants
   @name __MODULE__
@@ -13,14 +13,14 @@ defmodule FrobotsScenic.Scene.Game do
   @tank_radius 2
   @miss_size 2
   @frame_ms 30
-  @boom_width 40
-  @boom_height 40
+  #@boom_width 40
+  #@boom_height 40
   @boom_radius 20
-  @boom_path :code.priv_dir(:frobots_scenic)
-             |> Path.join("/static/images/explode.png")
-  @boom_hash Scenic.Cache.Support.Hash.file!(@boom_path, :sha)
+  #@boom_path :code.priv_dir(:frobots_scenic)
+  #             |> Path.join("/static/images/explode.png")
+  #@boom_hash Scenic.Cache.Support.Hash.file!(@boom_path, :sha)
   @animate_ms 100
-  @finish_delay_ms 500
+  #@finish_delay_ms 500
 
   # dummy match template (as the beta this stuff doesn't exist)
   @dummy_match_template %{
@@ -131,6 +131,7 @@ defmodule FrobotsScenic.Scene.Game do
       frobots: frobots,
       objects: %{tank: %{}, missile: %{}}
     }
+    IO.inspect Map.put(@dummy_match_template, :frobots, state.frobots)
 
     case Frobots.start_fubars(Map.put(@dummy_match_template, :frobots, state.frobots)) do
       {:ok, frobots_map} ->
