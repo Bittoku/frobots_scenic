@@ -9,7 +9,10 @@ defmodule FrobotsScenic.Scene.Landing do
   import Scenic.Components
   alias Frobots
 
+
   @body_offset 60
+  @login_cache ~s|#{Frobots.user_frobot_path()}/login.cache|
+
   def header() do
     [
       text_spec("Username:", t: {15, 40}),
@@ -59,6 +62,13 @@ defmodule FrobotsScenic.Scene.Landing do
       password: ""
     }
 
+    state = case File.read(@login_cache) do
+      {:ok, admin_pass} -> with %{"username" => username, "pass" => pass} <- Regex.named_captures(~r/(?<username>.+):(?<pass>.+)/, admin_pass) do
+        state |> Map.put(:username, username) |> Map.put(:password, pass)
+        end
+      {:error, _} -> state
+    end
+
     {:ok, state, push: graph}
   end
 
@@ -74,6 +84,7 @@ defmodule FrobotsScenic.Scene.Landing do
         graph = state.graph |> Graph.modify(:login_status, &text(&1, ~s|#{error}: Invalid Username/Password|, hidden: false))
         {:halt, Map.put(state, :graph, graph), push: graph}
       {:ok, token} ->
+        File.write(@login_cache, ~s|#{state.username}:#{state.password}|)
         # launch to the start
         Application.put_env(:frobots, :bearer_token, token)
         go_to_start_scene(state)

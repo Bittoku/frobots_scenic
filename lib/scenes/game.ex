@@ -131,7 +131,6 @@ defmodule FrobotsScenic.Scene.Game do
       frobots: frobots,
       objects: %{tank: %{}, missile: %{}}
     }
-    IO.inspect Map.put(@dummy_match_template, :frobots, state.frobots)
 
     case Frobots.start_fubars(Map.put(@dummy_match_template, :frobots, state.frobots)) do
       {:ok, frobots_map} ->
@@ -356,9 +355,9 @@ defmodule FrobotsScenic.Scene.Game do
     object_data |> Map.put(:timer, timer)
   end
 
-  defp update_alpha(object_data, alpha) do
-    object_data |> Map.put(:alpha, alpha)
-  end
+  # defp update_alpha(object_data, alpha) do
+  #   object_data |> Map.put(:alpha, alpha)
+  # end
 
   defp update_damage(object_data, damage) do
     object_data |> Map.put(:damage, damage)
