@@ -12,6 +12,7 @@ defmodule FrobotsScenic.Scene.Start do
   @body_offset 60
   def header() do
     [
+      text_spec(Frobots.user_frobot_path(), t: {550, 125}),
       text_spec("FROBOTs:", translate: {15, 20}),
       button_spec("Fight!", id: :btn_run, theme: :danger, t: {370, 0}),
       button_spec("Upload Frobots", id: :btn_upload, theme: :primary, t: {370, 50}),
@@ -113,7 +114,7 @@ defmodule FrobotsScenic.Scene.Start do
     Enum.map(frobots, fn {_name, type} ->
       # todo this needs to change once we have proper frobot unique names and not loading the template bots by default
       # this is aweful as the type is the atom version of the name.
-      %{name: Atom.to_string(type) }
+      %{name: Atom.to_string(type)}
     end)
   end
 

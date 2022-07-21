@@ -9,7 +9,6 @@ defmodule FrobotsScenic.Scene.Landing do
   import Scenic.Components
   alias Frobots
 
-
   @body_offset 60
   @login_cache ~s|#{Frobots.user_frobot_path()}/login.cache|
 
@@ -17,10 +16,10 @@ defmodule FrobotsScenic.Scene.Landing do
     [
       text_spec("Username:", t: {15, 40}),
       text_spec("Password:", t: {15, 80}),
-      text_field_spec("", id: :username, t: {150,20}),
-      text_field_spec("", id: :password, type: :password, t: {150,60}),
+      text_field_spec("", id: :username, t: {150, 20}),
+      text_field_spec("", id: :password, type: :password, t: {150, 60}),
       text_spec("Ok!", id: :login_status, hidden: true, t: {550, 80}),
-      button_spec("Login", id: :btn_login, theme: :primary, t: {400, 100}),
+      button_spec("Login", id: :btn_login, theme: :primary, t: {400, 100})
     ]
   end
 
@@ -28,12 +27,11 @@ defmodule FrobotsScenic.Scene.Landing do
     add_specs_to_graph(
       graph,
       [
-        header(),
+        header()
       ],
       translate: {0, @body_offset + 20}
     )
   end
-
 
   # ============================================================================
   @type t :: %{
@@ -44,6 +42,14 @@ defmodule FrobotsScenic.Scene.Landing do
           password: charlist()
         }
 
+  def put_env(token) do
+    Application.put_env(:frobots, :bearer_token, token)
+  end
+
+  def jump_to_start() do
+    Process.send_after(self(), :start, 500)
+  end
+
   def init(start_module, opts) do
     viewport = opts[:viewport]
 
@@ -53,7 +59,6 @@ defmodule FrobotsScenic.Scene.Landing do
       Graph.build(font: :roboto, font_size: 24, theme: :dark)
       |> add_specs()
 
-
     state = %{
       viewport: viewport,
       graph: graph,
@@ -62,31 +67,53 @@ defmodule FrobotsScenic.Scene.Landing do
       password: ""
     }
 
-    state = case File.read(@login_cache) do
-      {:ok, admin_pass} -> with %{"username" => username, "pass" => pass} <- Regex.named_captures(~r/(?<username>.+):(?<pass>.+)/, admin_pass) do
-        state |> Map.put(:username, username) |> Map.put(:password, pass)
+    case File.read(@login_cache) do
+      {:ok, admin_pass} ->
+        with %{"username" => username, "pass" => pass} <-
+               Regex.named_captures(~r/(?<username>.+):(?<pass>.+)/, admin_pass) do
+          client = Frobots.ApiClient.login_client(username, pass)
+
+          case Frobots.ApiClient.get_token(client) do
+            {:ok, token} ->
+              put_env(token)
+              go_to_start_scene(state)
+              state
+
+            _ ->
+              state
+          end
         end
-      {:error, _} -> state
+
+      {:error, _} ->
+        state
     end
 
     {:ok, state, push: graph}
   end
 
   @spec go_to_start_scene(t()) :: :ok
-  defp go_to_start_scene(%{viewport: vp, module: start_module}) do
+  def go_to_start_scene(%{viewport: vp, module: start_module}) do
     ViewPort.set_root(vp, {start_module, FrobotsScenic.Scene.Game})
   end
 
   def filter_event({:click, :btn_login}, _, state) do
     client = Frobots.ApiClient.login_client(state.username, state.password)
+
     case Frobots.ApiClient.get_token(client) do
       {:error, error} ->
-        graph = state.graph |> Graph.modify(:login_status, &text(&1, ~s|#{error}: Invalid Username/Password|, hidden: false))
+        graph =
+          state.graph
+          |> Graph.modify(
+            :login_status,
+            &text(&1, ~s|#{error}: Invalid Username/Password|, hidden: false)
+          )
+
         {:halt, Map.put(state, :graph, graph), push: graph}
+
       {:ok, token} ->
         File.write(@login_cache, ~s|#{state.username}:#{state.password}|)
         # launch to the start
-        Application.put_env(:frobots, :bearer_token, token)
+        put_env(token)
         go_to_start_scene(state)
         {:halt, state}
     end
@@ -101,5 +128,4 @@ defmodule FrobotsScenic.Scene.Landing do
     state = Map.put(state, :username, val)
     {:halt, state, push: state.graph}
   end
-
 end
