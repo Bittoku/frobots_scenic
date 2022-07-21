@@ -13,14 +13,14 @@ defmodule FrobotsScenic.Scene.Game do
   @tank_radius 2
   @miss_size 2
   @frame_ms 30
-  #@boom_width 40
-  #@boom_height 40
+  # @boom_width 40
+  # @boom_height 40
   @boom_radius 20
-  #@boom_path :code.priv_dir(:frobots_scenic)
+  # @boom_path :code.priv_dir(:frobots_scenic)
   #             |> Path.join("/static/images/explode.png")
-  #@boom_hash Scenic.Cache.Support.Hash.file!(@boom_path, :sha)
+  # @boom_hash Scenic.Cache.Support.Hash.file!(@boom_path, :sha)
   @animate_ms 100
-  #@finish_delay_ms 500
+  # @finish_delay_ms 500
 
   # dummy match template (as the beta this stuff doesn't exist)
   @dummy_match_template %{
@@ -72,7 +72,6 @@ defmodule FrobotsScenic.Scene.Game do
             status: FrobotsScenic.Scene.Game.tank_status(),
             fsm_state: charlist(),
             class: npc_class
-
           }
     defstruct scan: {0, 0},
               damage: 0,
@@ -204,12 +203,12 @@ defmodule FrobotsScenic.Scene.Game do
     end
   end
 
-  #https://htmlcolorcodes.com/color-names/
-  #https://hexdocs.pm/scenic/Scenic.Primitive.Style.Paint.Color.html#module-valid-colors
+  # https://htmlcolorcodes.com/color-names/
+  # https://hexdocs.pm/scenic/Scenic.Primitive.Style.Paint.Color.html#module-valid-colors
   defp tank_color(class) do
     case class do
       "Proto" -> :red
-      "Target" -> :pale_green
+      "Target" -> :green_yellow
       _ -> :dodger_blue
     end
   end
@@ -217,16 +216,20 @@ defmodule FrobotsScenic.Scene.Game do
   # Draw the game grid
   defp draw_grid(graph) do
     range = for n <- 0..1000, rem(n, 10) == 0, do: n
-    draw_horiz = fn y, graph -> line( graph, {{0,y}, {1000,y}}, stroke: {1, :medium_blue}  ) end
-    draw_vert = fn x, graph -> line( graph, {{x,0}, {x,1000}}, stroke: {1, :medium_blue}  ) end
+    draw_horiz = fn y, graph -> line(graph, {{0, y}, {1000, y}}, stroke: {1, :dark_blue}) end
+    draw_vert = fn x, graph -> line(graph, {{x, 0}, {x, 1000}}, stroke: {1, :dark_blue}) end
 
-    draw_horizontals = fn graph -> Enum.reduce(range, graph, fn n, graph -> draw_horiz.(n, graph) end) end
-    draw_verticals = fn graph -> Enum.reduce(range, graph, fn n, graph -> draw_vert.(n, graph) end) end
+    draw_horizontals = fn graph ->
+      Enum.reduce(range, graph, fn n, graph -> draw_horiz.(n, graph) end)
+    end
+
+    draw_verticals = fn graph ->
+      Enum.reduce(range, graph, fn n, graph -> draw_vert.(n, graph) end)
+    end
 
     graph
     |> draw_horizontals.()
     |> draw_verticals.()
-
   end
 
   # Draw the score HUD
@@ -464,17 +467,24 @@ defmodule FrobotsScenic.Scene.Game do
   end
 
   # this is the refresh loop of the display
-  @spec handle_info(:frame, %{frame_count: integer}) :: tuple
   def handle_info(:frame, %{frame_count: frame_count} = state) do
-    graph = state.graph |> draw_grid() |> draw_game_objects(state.objects) |> draw_status(state.objects)
+    graph =
+      state.graph |> draw_grid() |> draw_game_objects(state.objects) |> draw_status(state.objects)
+
     {:noreply, %{state | frame_count: frame_count + 1}, push: graph}
   end
 
   def handle_info({:game_over, names}, state) do
-    IO.inspect names = Tuple.to_list(names)
+    IO.inspect(names = Tuple.to_list(names))
     {:ok, _} = :timer.cancel(state.frame_timer)
     graph = state.graph |> draw_game_over(~s/#{names}/, state.tile_width, state.tile_height)
+    Process.send_after(self(), :restart, 5000)
     {:noreply, state, push: graph}
+  end
+
+  def handle_info(:restart, state) do
+    FrobotsScenic.Scene.Landing.go_to_start_scene(%{viewport: state.viewport, module: FrobotsScenic.Scene.Start})
+    {:noreply, state, push: state.graph}
   end
 
   # keyboard controls (currently no controls)
