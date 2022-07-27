@@ -123,10 +123,6 @@ defmodule FrobotsScenic.Scene.Start do
     ViewPort.set_root(vp, {game_module, load_frobots(frobots)})
   end
 
-  defp test_start_button(%{viewport: _vp, frobots: frobots, module: _game_module}) do
-    IO.puts(inspect(frobots))
-  end
-
   def add_default_frobots(state, num) do
     Enum.reduce(0..(num - 1), state, fn x, state ->
       put_in(state, [:frobots, frobot_id(x)], :rabbit)

@@ -483,7 +483,11 @@ defmodule FrobotsScenic.Scene.Game do
   end
 
   def handle_info(:restart, state) do
-    FrobotsScenic.Scene.Landing.go_to_start_scene(%{viewport: state.viewport, module: FrobotsScenic.Scene.Start})
+    FrobotsScenic.Scene.Landing.go_to_start_scene(%{
+      viewport: state.viewport,
+      module: FrobotsScenic.Scene.Start
+    })
+
     {:noreply, state, push: state.graph}
   end
 

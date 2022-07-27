@@ -99,8 +99,10 @@ defmodule FrobotsScenic.Scene.Landing do
   def filter_event({:click, :btn_login}, _, state) do
     client = Frobots.ApiClient.login_client(state.username, state.password)
 
-    print_error = fn code, msg, state -> state.graph
-                                    |> Graph.modify(:login_status, &text(&1, ~s|status #{code}: #{msg}|, hidden: false )) end
+    print_error = fn code, msg, state ->
+      state.graph
+      |> Graph.modify(:login_status, &text(&1, ~s|status #{code}: #{msg}|, hidden: false))
+    end
 
     case Frobots.ApiClient.get_token(client) do
       {:error, 401 = code} ->
@@ -108,7 +110,7 @@ defmodule FrobotsScenic.Scene.Landing do
         {:halt, Map.put(state, :graph, graph), push: graph}
 
       {:error, code} ->
-        graph = print_error.(code, "Unhandled Error", state )
+        graph = print_error.(code, "Unhandled Error", state)
         {:halt, Map.put(state, :graph, graph), push: graph}
 
       {:ok, token} ->
