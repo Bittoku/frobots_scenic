@@ -71,6 +71,7 @@ defmodule FrobotsScenic.Scene.Game do
             timer: reference,
             status: FrobotsScenic.Scene.Game.tank_status(),
             fsm_state: charlist(),
+            fsm_debug: charlist(),
             class: npc_class
           }
     defstruct scan: {0, 0},
@@ -84,6 +85,7 @@ defmodule FrobotsScenic.Scene.Game do
               timer: nil,
               status: :alive,
               fsm_state: nil,
+              fsm_debug: nil,
               class: nil
   end
 
@@ -240,7 +242,8 @@ defmodule FrobotsScenic.Scene.Game do
          damage: damage,
          heading: heading,
          speed: speed,
-         fsm_state: fsm_state
+         fsm_state: fsm_state,
+         fsm_debug: fsm_debug
        }) do
     graph
     |> text("#{name}",
@@ -268,7 +271,11 @@ defmodule FrobotsScenic.Scene.Game do
       fill: status_color(damage),
       translate: {350, 10 + id * @font_vert_space}
     )
-  end
+    |> text("debug:#{fsm_debug}",
+      fill: status_color(damage),
+      translate: {500, 10 + id * @font_vert_space}
+    )
+    end
 
   defp draw_game_over(graph, name, vp_width, vp_height) do
     position = {
@@ -378,12 +385,22 @@ defmodule FrobotsScenic.Scene.Game do
     object_data |> Map.put(:fsm_state, fsm_state)
   end
 
+  defp update_fsm_debug(object_data, fsm_debug) do
+    object_data |> Map.put(:fsm_debug, fsm_debug)
+  end
+
   defp update_in?(map, path, func) do
     if get_in(map, path) do
       update_in(map, path, func)
     else
       map
     end
+  end
+
+  @spec handle_info({:fsm_debug, tank_name, charlist}, t) :: tuple
+  def handle_info({:fsm_debug, frobot, fsm_debug}, state) do
+    state = update_in?(state, [:objects, :tank, frobot], &update_fsm_debug(&1, fsm_debug))
+    {:noreply, state}
   end
 
   @spec handle_info({:fsm_state, tank_name, charlist}, t) :: tuple
