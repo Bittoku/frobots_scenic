@@ -29,13 +29,21 @@ defmodule FrobotsScenic.Scene.Start do
   ##
   # Now the specs for the various components we'll display
   def frobot_dropdowns(n) do
-    frobot_types = Frobots.frobot_types()
+    user_frobot_types = Frobots.user_frobot_types()
+    proto_frobot_types = Frobots.proto_frobot_types()
 
     Enum.map(0..(n - 1), fn x ->
+      types = case x do
+        0 -> if Enum.count(user_frobot_types), do: user_frobot_types, else: proto_frobot_types
+        _ -> proto_frobot_types
+      end
+
+      first_type = fn {_name, type_atom} -> type_atom end
+
       dropdown_spec(
         {
-          frobot_types,
-          :rabbit
+          types,
+          first_type.(hd(types))
         },
         id: frobot_id(x),
         translate: {100 * x, 100}
@@ -123,9 +131,15 @@ defmodule FrobotsScenic.Scene.Start do
     ViewPort.set_root(vp, {game_module, load_frobots(frobots)})
   end
 
+  defp get_default_from_graph(graph, x) do
+    [%Scenic.Primitive{data: {_type, {_list, default}}}] = Graph.get(graph, frobot_id(x))
+    default
+  end
+
   def add_default_frobots(state, num) do
     Enum.reduce(0..(num - 1), state, fn x, state ->
-      put_in(state, [:frobots, frobot_id(x)], :rabbit)
+      default = get_default_from_graph(state.graph, x)
+      put_in(state, [:frobots, frobot_id(x)], default)
     end)
   end
 
