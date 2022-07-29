@@ -20,7 +20,8 @@ defmodule FrobotsScenic.Scene.Game do
   #             |> Path.join("/static/images/explode.png")
   # @boom_hash Scenic.Cache.Support.Hash.file!(@boom_path, :sha)
   @animate_ms 100
-  # @finish_delay_ms 500
+  @finish_delay_ms 5000
+
 
   # dummy match template (as the beta this stuff doesn't exist)
   @dummy_match_template %{
@@ -495,7 +496,7 @@ defmodule FrobotsScenic.Scene.Game do
     IO.inspect(names = Tuple.to_list(names))
     {:ok, _} = :timer.cancel(state.frame_timer)
     graph = state.graph |> draw_game_over(~s/#{names}/, state.tile_width, state.tile_height)
-    Process.send_after(self(), :restart, 5000)
+    Process.send_after(self(), :restart, @finish_delay_ms)
     {:noreply, state, push: graph}
   end
 
