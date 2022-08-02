@@ -106,6 +106,7 @@ defmodule FrobotsScenic.Scene.Start do
       module: game_module,
       match_id: match_id
     }
+    |> add_default_frobots(num)
 
     {:ok, state, push: graph}
   end
