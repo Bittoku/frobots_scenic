@@ -79,6 +79,7 @@ defmodule FrobotsScenic.Scene.Start do
           match_id: Integer
         }
   def init(game_module, opts) do
+    IO.inspect("START VIEW")
     viewport = opts[:viewport]
     num = Keyword.get(opts, :num, 2)
 
@@ -89,7 +90,7 @@ defmodule FrobotsScenic.Scene.Start do
       |> add_specs(num)
 
     {:ok, match_id} = Frobots.request_match()
-
+    IO.inspect(match_id, label: "Match_id")
     state = %{
       num: num,
       viewport: viewport,
@@ -119,7 +120,7 @@ defmodule FrobotsScenic.Scene.Start do
   end
 
   @spec go_to_first_scene(t()) :: :ok
-  defp go_to_first_scene(%{viewport: vp, frobots: frobots, module: game_module}) do
+  defp go_to_first_scene(%{viewport: vp, frobots: frobots, module: game_module, match_id: match_id}) do
     ViewPort.set_root(vp, {game_module, load_frobots(frobots)})
   end
 

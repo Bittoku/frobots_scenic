@@ -2,7 +2,8 @@ defmodule FrobotsScenic.Scene.Game do
   use Scenic.Scene
   alias Scenic.Graph
   alias Scenic.ViewPort
-  import Scenic.Primitives, only: [rrect: 3, text: 3, circle: 3, line: 3]
+  import Scenic.Primitives
+  import Scenic.Components
 
   # Constants
   @name __MODULE__
@@ -13,6 +14,7 @@ defmodule FrobotsScenic.Scene.Game do
   @tank_radius 2
   @miss_size 2
   @frame_ms 30
+  @body_offset 60
   # @boom_width 40
   # @boom_height 40
   @boom_radius 20
@@ -101,9 +103,25 @@ defmodule FrobotsScenic.Scene.Game do
               status: :flying
   end
 
-  # Initialize the game scene
+  def header() do
+    [
+      button_spec("Cancel", id: :btn_cancel, theme: :primary, t: {100, 100})
+    ]
+  end
 
+  def add_specs(graph) do
+    add_specs_to_graph(
+      graph,
+      [
+        header()
+      ],
+      translate: {0, @body_offset + 20}
+    )
+  end
+
+  # Initialize the game scene
   def init(frobots, opts) do
+    IO.inspect("GAME VIEW")
     viewport = opts[:viewport]
     # calculate the transform that centers the viewport
     {:ok, %ViewPort.Status{size: {vp_width, vp_height}}} = ViewPort.info(viewport)
@@ -117,6 +135,10 @@ defmodule FrobotsScenic.Scene.Game do
     IO.puts("Registering pid #{inspect(self())} as display")
     :global.register_name(Application.get_env(:frobots, :display_process_name), self())
 
+    graph =
+      Graph.build(font: :roboto, font_size: 24, theme: :dark)
+      |> add_specs()
+
     # init the game state
     # The entire game state will be held here
     # the frobots come in as arg from the start scene
@@ -124,7 +146,7 @@ defmodule FrobotsScenic.Scene.Game do
       viewport: viewport,
       tile_width: vp_width,
       tile_height: vp_height,
-      graph: @graph,
+      graph: graph,
       frame_count: 1,
       frame_timer: timer,
       frobots: frobots,
@@ -147,6 +169,14 @@ defmodule FrobotsScenic.Scene.Game do
         # todo should probably show an error to the graph, as the game failed to start somehow.
         {:ok, state, push: state.graph}
     end
+  end
+
+  def filter_event({:click, :btn_cancel}, _, state) do
+    {:ok, _} = :timer.cancel(state.frame_timer)
+    IO.inspect(state, label: "BTN CANCEL")
+    Frobots.cancel_match()
+    Process.send_after(self(), :restart, 100)
+    {:halt, state, push: state.graph}
   end
 
   defp keys_to_atoms(string_key_map) do

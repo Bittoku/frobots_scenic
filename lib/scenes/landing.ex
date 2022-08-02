@@ -51,6 +51,7 @@ defmodule FrobotsScenic.Scene.Landing do
   end
 
   def init(start_module, opts) do
+    IO.inspect("LANDING VIEW")
     viewport = opts[:viewport]
 
     ##

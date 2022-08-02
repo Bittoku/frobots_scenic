@@ -3,18 +3,19 @@
 use Mix.Config
 
 # Configure the main viewport for the Scenic application
-config :frobots_scenic, :viewport, %{
-  name: :main_viewport,
-  size: {1000, 1000},
-  default_scene: {FrobotsScenic.Scene.Local.Start, nil},
-  drivers: [
-    %{
-      module: Scenic.Driver.Glfw,
-      name: :glfw,
-      opts: [resizeable: false, title: "frobots_scenic"]
-    }
-  ]
-}
+config :frobots_scenic,
+  viewport: %{
+    name: :main_viewport,
+    size: {1000, 1000},
+    default_scene: {FrobotsScenic.Scene.Local.Start, nil},
+    drivers: [
+      %{
+        module: Scenic.Driver.Glfw,
+        name: :glfw,
+        opts: [resizeable: false, title: "frobots_scenic"]
+      }
+    ]
+  }
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
